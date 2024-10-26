@@ -1,7 +1,6 @@
 use std::path::Path;
 
-use clap::Parser;
-
+use actix_cors::Cors;
 use actix_files as fs;
 use actix_web::{
     middleware::{self, DefaultHeaders},
@@ -9,6 +8,7 @@ use actix_web::{
     web::post,
     App, HttpResponse, HttpServer, Result,
 };
+use clap::Parser;
 
 use backend::{route_compile, Opts};
 
@@ -59,6 +59,15 @@ async fn main() -> std::io::Result<()> {
                     .add(("Cross-Origin-Opener-Policy", "same-origin"))
                     .add(("Cross-Origin-Embedder-Policy", "require-corp")),
             )
+            .wrap(
+                Cors::default()
+                        .allow_any_origin()
+                        // .allowed_methods(vec!["GET", "POST", "OPTIONS"])
+                        .allow_any_method()
+                        // .allowed_headers(vec!["Content-Type", "Authorization"])
+                        .allow_any_header()
+                        .max_age(3600),
+                )
             .route("/compile", post().to(|body| route_compile(body)));
 
         // Serve frontend files if configured via CLI
